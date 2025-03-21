@@ -24,8 +24,20 @@ export class MainScene extends Phaser.Scene {
     this.ball = this.add.circle(400, 300, 10, 0xff0000);
     this.physics.add.existing(this.ball);
     (this.ball.body as Phaser.Physics.Arcade.Body).setBounce(1, 1);
-    (this.ball.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
+    (this.ball.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(false);
     (this.ball.body as Phaser.Physics.Arcade.Body).setVelocity(200, -200);
+
+    const leftWall = this.add.rectangle(-10, 300, 20, 600);
+    const rightWall = this.add.rectangle(810, 300, 20, 600);
+    const topWall = this.add.rectangle(400, -10, 800, 20);
+    
+    this.physics.add.existing(leftWall, true);
+    this.physics.add.existing(rightWall, true);
+    this.physics.add.existing(topWall, true);
+    
+    this.physics.add.collider(this.ball, leftWall);
+    this.physics.add.collider(this.ball, rightWall);
+    this.physics.add.collider(this.ball, topWall);
 
     this.bricks = [];
     for (let i = 0; i < 5; i++) {
@@ -70,7 +82,7 @@ export class MainScene extends Phaser.Scene {
     }
 
     // Check if ball is below paddle
-    if ((this.ball.body as Phaser.Physics.Arcade.Body).y > 600) {
+    if ((this.ball.body as Phaser.Physics.Arcade.Body).y > this.paddle.y + 50) {
       this.lives--;
       this.livesText.setText(`Lives: ${this.lives}`);
       
@@ -79,10 +91,14 @@ export class MainScene extends Phaser.Scene {
         this.score = 0;
         this.lives = 3;
       } else {
+        // Reset ball position and give a small pause
+        this.ball.setPosition(400, 300);
         const ballBody = this.ball.body as Phaser.Physics.Arcade.Body;
-        ballBody.x = 400;
-        ballBody.y = 300;
-        ballBody.setVelocity(200, -200);
+        ballBody.setVelocity(0, 0);
+        
+        this.time.delayedCall(1000, () => {
+          ballBody.setVelocity(200, -200);
+        });
       }
     }
   }
